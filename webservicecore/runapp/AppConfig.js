@@ -28,7 +28,7 @@ module.exports = class {
     get i18nConfig(){return this._i18nConfig;}
     setI18nConfig(_i18nConfig) { this._i18nConfig = _i18nConfig; }
 
-    get command(){return this._commands;}
+    get commands(){return this._commands;}
     registerCommand(config){
         Object.assign(this._commands,config);
     }
