@@ -2,48 +2,41 @@
  * Created by ruifan on 17-3-28.
  */
 const http = require('http');
-http.globalAgent.maxSockets = process.env.HTTP_MAX_SOCKET || 40000
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const ExceptoinWithErrorCode = require('./ExceptoinWithErrorCode')
-//i18n国际化配置引入
-const i18n = require('i18n');
+const i18n = require('i18n'); // i18n国际化配置引入
 
+http.globalAgent.maxSockets = process.env.HTTP_MAX_SOCKET || 40000
+const ExceptoinWithErrorCode = require('./ExceptoinWithErrorCode')
 
 const executingSet = new Set();
 const removeSet = new Set();
-
 const DATA_POOL = {};
 const CONFIG_POOL = {};
+const REQUEST_VARS_POOL = [];
+const _global = {}; //全局变量
+
 DATA_POOL['http'] = http;
 DATA_POOL['express'] = express;
-
-const REQUEST_VARS_POOL = [];
-
-//全局变量
-const _global = {};
 
 //默认服务
 var defaultAppName = null;
 
-const Sleep = t=>new Promise(res=>setTimeout(_=>res(),t));
+const Sleep = t => new Promise(res => setTimeout(_ => res(), t ));
 /**
  * 全局捕捉异常
+ * 可选异常捕捉方式，控制台或者记录到文件
  */
 process.on('uncaughtException', (err) => {
-
 	console.error(`app caught uncaughtException: ${err}`)
 	console.error(`app caught uncaughtException: ${err && err.stack || ''}`)
-
     // fs.writeSync(1, `Caught exception: ${err}\n`);
 });
-
 process.on('unhandledRejection', (reason, p) => {
     console.error('app caught unhandledRejection at:', p, 'reason:', reason);
 });
-
 
 /**
  * 服务器异常处理对应回调
@@ -64,7 +57,6 @@ function onListening() {
     console.debug('App start!Listening on ' + bind);
 }
 
-
 async function taskTick() {
     this.status = 1
     try{
@@ -80,11 +72,7 @@ async function taskSleep() {
     this.status = 4
 }
 
-
 module.exports = class {
-
-
-
     constructor() {
         this.handlingCount0 = 0;
         this.handlingCount1 = 0;
@@ -112,7 +100,11 @@ module.exports = class {
         return CONFIG_POOL[key];
     }
 
-    async start(config){  //appName,port,routes,viewFolder,publicFolder,viewEngine,i18nConfig) {
+    /**
+     * 加载配置启动App
+     * @param config {appName, port, routes, viewFolder, publicFolder, viewEngine, i18nConfig}
+     */
+    async start(config){
         var app = express();
         DATA_POOL[config.appName] = app;
         defaultAppName = defaultAppName || config.appName;
@@ -148,14 +140,14 @@ module.exports = class {
         }
 
         ( config.supportMethods || ['get','post','options'] ).map(
-            v=>v.toLocaleLowerCase()).forEach(name=>this.routes[name]
-                && typeof this.routes[name] === 'function' && this.routes[name]('/*',(...paras)=>this.handle(...paras)));
+            v=>v.toLocaleLowerCase()).forEach(name => this.routes[name]
+                && typeof this.routes[name] === 'function' && this.routes[name]('/*',(...paras) => this.handle(...paras)));
 
         // view engine setup
         config.viewFolder && app.set('views', path.join("./", config.viewFolder));
         config.viewEngine && app.set('view engine', config.viewEngine)
         config.staticFolder && app.use(express.static(path.join(__dirname, config.staticFolder)));
-        app.use( (req,res,next)=>{req && delete req.headers['content-encoding'];next();} )
+        app.use( (req,res,next) => {req && delete req.headers['content-encoding']; next();})
         app.use(bodyParser.json({limit: config.requestLimit}));
         app.use(bodyParser.urlencoded({ extended: false, limit:config.requestLimit}));
         app.use(cookieParser());
@@ -170,11 +162,15 @@ module.exports = class {
         this.server.setTimeout(config.timeout);//todo 改为配置
         this.server.listen(config.port);
 
+        // 循环任务相关
         this.taskStopFlag = false;
         this.taskTick();
 
     }
 
+    /**
+     * 处理请求
+     */
      async handle(request, response, next) {
         let t = Date.now();
         let url = request.originalUrl.split('?')[0];
@@ -189,19 +185,22 @@ module.exports = class {
             return
         this.handlingCount0++;
         try {
-            await this.runHandlerRequest(url,config,controller,request,response);
+            await this.runHandlerRequest(url, config, controller, request, response);
         }catch (e) {
             console.error(e);
-            await this.handlerError(url, controller, request, response, e,config);
+            await this.handlerError(url, controller, request, response, e, config);
         }
         this.handlingCount0--;
         this.backControllerToPool(url,request,response,controller);
     }
 
-    async runHandlerRequest(url,config, controller, request, response) {
+    /**
+     * 执行url对应的方法
+     */
+    async runHandlerRequest (url, config, controller, request, response) {
         var result = null;
         this.handlingCount1++;
-        this.execIoc(controller,request,response,config);
+        this.execIoc(controller, request, response, config);
         if (!config.method || !controller[config.method] || !typeof controller[config.method] === 'function') {
             this.handlingCount1--;
             throw new Error('no such methoed!');
@@ -222,9 +221,8 @@ module.exports = class {
         }
         this.handlingCount2--;
 
-
         try {
-            await this.execAfterHandler(controller,request,response,config) ;
+            await this.execAfterHandler(controller, request, response, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
                 result = result && await adives[i]( result,controller,request,response,config);
@@ -303,7 +301,14 @@ module.exports = class {
         removeSet.delete(controller);
     }
 
-    execIoc(controller, request, response,config){
+    /**
+     * 预处理，对象初始化
+     * @param controller
+     * @param request
+     * @param response
+     * @param config
+     */
+    execIoc(controller, request, response, config){
         controller.request = request;
         controller.response = response;
         let para1 = request.query || {}
@@ -338,19 +343,28 @@ module.exports = class {
         controller.i18nDefaultLocale = null;
     }
 
-    async execFileter(controller,request,response,config) {
+    /**
+     * 过滤器
+     * 可定制方法对应的过滤器，或者定义通用的过滤器
+     */
+    async execFileter(controller, request, response, config) {
         var filters = config.filterHandlers || this.config.controllerFilterHandlers || [] ;
         for (var i = 0; i < filters.length; i++) {
-            if( !(await filters[i]( controller,request,response,config,app )))
+            if( !(await filters[i]( controller, request, response, config, app )))
                 return false;
         }
         return true;
     }
 
+    /**
+     * 后置处理器
+     * 请求结构发送后，进行某些处理，可定制/通用
+     * 可用于用户行为的记录等
+     */
     async execAfterHandler(controller, request, response, config) {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
-            await afterHandlers[i]( controller,request,response,config,app );
+            await afterHandlers[i]( controller, request, response, config, app );
         }
     }
 
@@ -361,7 +375,6 @@ module.exports = class {
             Object.keys(this.tasks).forEach( k=>{
                 if( !k ) return ;
                 let task = this.tasks[k]
-
 
                 //运行中的不予处理
                 if(task.status === 1)
