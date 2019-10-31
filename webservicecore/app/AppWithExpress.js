@@ -113,6 +113,14 @@ module.exports = class {
         this.config = config;
         this.taskConfig = config.tasksConfig;
 
+        for( var func = null,i = 0 ; config.appInitConfigHandlers && i < config.appInitConfigHandlers.length ; i++ ){
+            ( config.appInitConfigHandlers[i] && typeof config.appInitConfigHandlers[i] === 'function' && ( func = config.appInitConfigHandlers[i] ) )
+            || ( config.appInitConfigHandlers[i].init
+                && typeof config.appInitConfigHandlers[i].init === 'function' && ( func = config.appInitConfigHandlers[i].init ) );
+            func && await func(app,DATA_POOL,CONFIG_POOL);
+        }
+        func = null;
+
         /**
          * i18n国际化配置和注册
          */

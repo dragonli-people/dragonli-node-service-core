@@ -52,6 +52,11 @@ module.exports = class {
         Object.assign(this._tasksConfig,tasks);
     }
 
+    get appInitConfigHandlers(){return this._appInitConfigHandlers;}
+    addAppInitConfigHandlers(configHandlers){
+        this._appInitConfigHandlers = [...this._appInitConfigHandlers,...configHandlers];
+    }
+
     get appInitHandlers(){return this._appInitHandlers;}
     addAppInitHandlers(handlers){
         this._appInitHandlers = [...this._appInitHandlers,...handlers];
@@ -102,6 +107,7 @@ module.exports = class {
         this._supportMethods = ['get','post','options'];
         this._routesConfig = {};
         this._tasksConfig = {};
+        this._appInitConfigHandlers = [];
         this._appInitHandlers = [];
         this._controllerIocKeys = [];
         this._controllerAutoConfigKey = [];
