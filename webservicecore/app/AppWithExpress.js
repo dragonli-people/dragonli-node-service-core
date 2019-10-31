@@ -92,6 +92,14 @@ module.exports = class {
     //     return DATA_POOL;
     // }
 
+    putToPool(key,value){
+        return DATA_POOL[key] = value;
+    }
+
+    putConfigToPool(key,config){
+        return CONFIG_POOL[key] = value;
+    }
+
     getFromPool(key){
         return DATA_POOL[key];
     }
