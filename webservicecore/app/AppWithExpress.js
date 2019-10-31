@@ -400,7 +400,7 @@ module.exports = class {
                 if(task.stoped)
                 {
                     task.handler.config = null
-                    task.handler.redisHandler = null
+                    task.handler.app = null
                     task.handler = null
                     delete this.tasks[k]
                     return
@@ -437,7 +437,7 @@ module.exports = class {
                 let handler = new config.clz()
                 handler.run = handler[config.method]
                 handler.config = config
-                handler.redisHandler = RedisHandler
+                handler.app = this;
 
                 let task = {
                     status: 0,
