@@ -97,7 +97,7 @@ module.exports = class {
     }
 
     putConfigToPool(key,config){
-        return CONFIG_POOL[key] = value;
+        return CONFIG_POOL[key] = config;
     }
 
     getFromPool(key){
