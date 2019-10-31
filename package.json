@@ -1,5 +1,5 @@
 {
-  "name": "dragonli-node_service_core",
+  "name": "dragonli-node-service-core",
   "version": "0.9.0",
   "description": "node web service base on express. support q request url by one line config and a async functio",
   "main": "index.js",
