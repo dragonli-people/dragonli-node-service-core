@@ -366,7 +366,7 @@ module.exports = class {
     async execFileter(controller, request, response, config) {
         var filters = config.filterHandlers || this.config.controllerFilterHandlers || [] ;
         for (var i = 0; i < filters.length; i++) {
-            if( !(await filters[i]( controller, request, response, config, app )))
+            if( !(await filters[i]( controller, request, response, config, this )))
                 return false;
         }
         return true;
@@ -380,7 +380,7 @@ module.exports = class {
     async execAfterHandler(controller, request, response, config) {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
-            await afterHandlers[i]( controller, request, response, config, app );
+            await afterHandlers[i]( controller, request, response, config, this );
         }
     }
 
