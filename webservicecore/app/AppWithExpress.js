@@ -339,16 +339,18 @@ module.exports = class {
         controller.config = config;
         controller.app = this;
 
-        var icoKeys = [ ...this.config.controllerIocKeys,...(controller.icoKeys || [])] ;
-        var configKeys = [  ...this.config.controllerAutoConfigKey,...(controller.autoConfigKey||[])];
-        icoKeys.forEach( key => controller[key] = DATA_POOL[key] || null );
-        configKeys.forEach( key => controller[key] = CONFIG_POOL[key] || null );
+        this.execIocFromPool(controller);
+    }
+
+    execIocFromPool(obj,clear=false){
+        var icoKeys = [ ...this.config.controllerIocKeys,...(obj.icoKeys || [])] ;
+        var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])];
+        icoKeys.forEach( key => obj[key] = !clear && DATA_POOL[key] || null );
+        configKeys.forEach( key => obj[key] = !clear && CONFIG_POOL[key] || null );
     }
 
     clearIoc(controller, request, response,config) {
-        var keys = [ ...this.config.controllerIocKeys,...(controller.icoKeys || [])
-            , ...this.config.controllerAutoConfigKey,...(controller.autoConfigKey||[])];
-        keys.forEach( key => controller[key] =  null );
+        this.execIocFromPool(controller,true);
 
         controller.request = null;
         controller.response = null;
@@ -399,9 +401,10 @@ module.exports = class {
                 //已停止的要剔除
                 if(task.stoped)
                 {
-                    task.handler.config = null
-                    task.handler.app = null
-                    task.handler = null
+                    task.handler.config = null;
+                    task.handler.app = null;
+                    task.handler = null;
+                    this.execIocFromPool(task.handler,true);
                     delete this.tasks[k]
                     return
                 }
@@ -425,7 +428,7 @@ module.exports = class {
                 //todo 执行到此处是有问题的...，有待日志记录
             })
 
-            this.taskStopFlag && Object.keys(this.taskConfig).forEach(k => {
+            !this.taskStopFlag && Object.keys(this.taskConfig).forEach(k => {
                 if (this.tasks[k])
                     return
 
@@ -438,6 +441,7 @@ module.exports = class {
                 handler.run = handler[config.method]
                 handler.config = config
                 handler.app = this;
+                this.execIocFromPool(handler);
 
                 let task = {
                     status: 0,
