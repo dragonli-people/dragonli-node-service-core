@@ -125,7 +125,7 @@ module.exports = class {
             ( config.appInitConfigHandlers[i] && typeof config.appInitConfigHandlers[i] === 'function' && ( func = config.appInitConfigHandlers[i] ) )
             || ( config.appInitConfigHandlers[i].init
                 && typeof config.appInitConfigHandlers[i].init === 'function' && ( func = config.appInitConfigHandlers[i].init ) );
-            func && await func(this,DATA_POOL,CONFIG_POOL);
+            func && await func.call(config.appInitConfigHandlers[i],this,DATA_POOL,CONFIG_POOL);
         }
         func = null;
 
@@ -152,7 +152,7 @@ module.exports = class {
             ( config.appInitHandlers[i] && typeof config.appInitHandlers[i] === 'function' && ( func = config.appInitHandlers[i] ) )
             || ( config.appInitHandlers[i].init
                 && typeof config.appInitHandlers[i].init === 'function' && ( func = config.appInitHandlers[i].init ) );
-            func && await func(this,DATA_POOL,CONFIG_POOL);
+            func && await func.call(config.appInitHandlers[i],this,DATA_POOL,CONFIG_POOL);
         }
 
         ( config.supportMethods || ['get','post','options'] ).map(
