@@ -343,10 +343,15 @@ module.exports = class {
     }
 
     execIocFromPool(obj,clear=false){
-        var icoKeys = [ ...this.config.controllerIocKeys,...(obj.icoKeys || [])] ;
-        var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])];
-        icoKeys.forEach( key => obj[key] = !clear && DATA_POOL[key] || null );
-        configKeys.forEach( key => obj[key] = !clear && CONFIG_POOL[key] || null );
+        var icoKeys = [ ...this.config.controllerIocKeys,...(obj.icoKeys || [])].map(formatKey) ;
+        var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])].map(formatKey);
+        icoKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && DATA_POOL[sourceKey] || null );
+        configKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && CONFIG_POOL[sourceKey] || null );
+    }
+
+    formatKey(key){
+        var arr = key.split('');
+        return {sourceKey:arr[0],destKey:arr[1]||arr[0]};
     }
 
     clearIoc(controller, request, response,config) {
