@@ -182,6 +182,8 @@ module.exports = class {
         this.taskStopFlag = false;
         this.taskTick();
 
+        await Sleep(32);
+        console.log('==========app started done!==========')
     }
 
     /**
