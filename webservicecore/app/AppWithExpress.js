@@ -352,7 +352,7 @@ module.exports = class {
     }
 
     formatKey(key){
-        var arr = key.split('');
+        var arr = key.split(':');
         return {sourceKey:arr[0],destKey:arr[1]||arr[0]};
     }
 
