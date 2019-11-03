@@ -346,7 +346,7 @@ module.exports = class {
 
     execIocFromPool(obj,clear=false){
         var icoKeys = [ ...this.config.controllerIocKeys,...(obj.icoKeys || [])].map(this.formatKey) ;
-        var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])].map(formatKey);
+        var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])].map(this.formatKey);
         icoKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && DATA_POOL[sourceKey] || null );
         configKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && CONFIG_POOL[sourceKey] || null );
     }
