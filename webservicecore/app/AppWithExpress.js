@@ -194,21 +194,22 @@ module.exports = class {
      async handle(request, response, next) {
         let t = Date.now();
         let url = request.originalUrl.split('?')[0];
-        let config = this.config.routesConfig[url]
+        let config = this.config.routesConfig[url];
         if(!config )
             return
         if( this.config.supportMethods.indexOf(request.method.toLocaleLowerCase()) < 0 )
             return
+        const context = {},controllerIocKeys = [];
         let controller = this.createController(url, request, response);
         controller.handleStartTime = t;
         if( !controller )
             return
         this.handlingCount0++;
         try {
-            await this.runHandlerRequest(url, config, controller, request, response);
+            await this.runHandlerRequest(url, config, controller,context,controllerIocKeys, request, response);
         }catch (e) {
             console.error(e);
-            await this.handlerError(url, controller, request, response, e, config);
+            await this.handlerError(url, controller,context,controllerIocKeys, request, response, config,e);
         }
         this.handlingCount0--;
         this.backControllerToPool(url,request,response,controller);
@@ -217,10 +218,10 @@ module.exports = class {
     /**
      * 执行url对应的方法
      */
-    async runHandlerRequest (url, config, controller, request, response) {
+    async runHandlerRequest (url, config, controller,context,controllerIocKeys, request, response) {
         var result = null;
         this.handlingCount1++;
-        const context = {},controllerIocKeys = [];
+
         this.execIoc(controller,context,controllerIocKeys, request, response, config);
         if (!config.method || !controller[config.method] || !typeof controller[config.method] === 'function') {
             this.handlingCount1--;
@@ -243,10 +244,10 @@ module.exports = class {
         this.handlingCount2--;
 
         try {
-            await this.execAfterHandler(controller,context,controllerIocKeys, request, response, config) ;
+            await this.execAfterHandler(controller, request, response,context,controllerIocKeys, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
-                result = result && await adives[i]( result,controller,request,response,config);
+                result = result && await adives[i]( result,controller,request,response,context,controllerIocKeys,config);
             }
             await this.sendResult(config, url, controller, request, response, result);
         }catch (e) {
@@ -294,7 +295,7 @@ module.exports = class {
         response.send(JSON.stringify(data))
     }
 
-    async handlerError(controller, request, response,config,e){
+    async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
         var advice = config.errorAdvice || controller.controllerErrorAdvice;
         advice && typeof advice === 'function' && advice(e,controller, request, response);
     }
