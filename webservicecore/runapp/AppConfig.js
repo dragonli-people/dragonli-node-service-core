@@ -92,6 +92,11 @@ module.exports = class {
         this._controllerErrorAdvice = advice;
     }
 
+    get appBeforeStartReady(){return this._appBeforeStartReady;}
+    set appBeforeStartReady(func){
+        this._appBeforeStartReady = func;
+    }
+
     constructor(){
 
         this._appName = 'App';
@@ -115,32 +120,7 @@ module.exports = class {
         this._controllerAfterHandlers = [];
         this._controllerResultAdvices = [];
         this._controllerErrorAdvice = null;
-
-/*
-        this.registCommand({
-            test:{clz:GnenralSystemCommand,methods:'test'},
-            update:{clz:GnenralSystemCommand,methods:'update'},
-            stop:{clz:GnenralSystemCommand,methods:'stop'},
-            start:{clz:GnenralSystemCommand,methods:'start'},
-            hc:{clz:GnenralSystemCommand,methods:'handleCount'},
-            hcs:{clz:GnenralSystemCommand,methods:'handleCounts'},
-            // update:{clz:GnenralSystemCommand,methods:'update'},
-            ic:{clz:GnenralSystemCommand,methods:'getInvokeCount'},
-            changeRT:{clz:GnenralSystemCommand,methods:'changeRT'},
-            changeET:{clz:GnenralSystemCommand,methods:'changeET'},
-            // changeCD:{clz:GnenralSystemCommand,methods:'changeCD'},
-            // changeSD:{clz:GnenralSystemCommand,methods:'changeSD'},
-            // ...(commandConfig||{})
-            stopAlevel:{clz:GnenralSystemCommand,methods:'stopAlevel'},
-            stopBlevel:{clz:GnenralSystemCommand,methods:'stopBlevel'},
-            startAlevel:{clz:GnenralSystemCommand,methods:'startAlevel'},
-            startBlevel:{clz:GnenralSystemCommand,methods:'startBlevel'},
-            view_level:{clz:GnenralSystemCommand,methods:'viewLevel'},
-            addList:{clz:GnenralSystemCommand,methods:'addList'},
-            view_ip:{clz:GnenralSystemCommand,methods:'viewIp'},
-            downLoadInfo:{clz:GnenralSystemCommand,methods:'downLoadInfo'}
-        });
-        */
+        this._appBeforeStartReady = null;
     }
 
     removeHandlers(...paras){

@@ -169,6 +169,8 @@ module.exports = class {
         app.use(cookieParser());
         app.use('/', this.routes);
 
+        config.appBeforeStartReady && await config.appBeforeStartReady(this,DATA_POOL,CONFIG_POOL);
+
         /**
          * Listen on provided port, on all network interfaces.
          */
