@@ -403,7 +403,7 @@ module.exports = class {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
             var current = filters[i];
-            var func = typeof current === 'function' ? current : current.doFilter;
+            var func = typeof current === 'function' ? current : current.afterCompletion;
             await func.call( current === func ? null : current ,
                 controller,context,controllerIocKeys, request, response, config, this );
         }
