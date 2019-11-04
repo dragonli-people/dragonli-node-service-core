@@ -220,14 +220,15 @@ module.exports = class {
     async runHandlerRequest (url, config, controller, request, response) {
         var result = null;
         this.handlingCount1++;
-        this.execIoc(controller, request, response, config);
+        const context = {},controllerIocKeys = [];
+        this.execIoc(controller,context,controllerIocKeys, request, response, config);
         if (!config.method || !controller[config.method] || !typeof controller[config.method] === 'function') {
             this.handlingCount1--;
             throw new Error('no such methoed!');
         }
 
         this.handlingCount2++;
-        if( !( await this.execFileter(controller,request,response,config) ) ) {
+        if( !( await this.execFilter(controller,context,controllerIocKeys,request,response,config) ) ) {
             this.handlingCount1--;
             this.handlingCount2--;
             return;
@@ -242,7 +243,7 @@ module.exports = class {
         this.handlingCount2--;
 
         try {
-            await this.execAfterHandler(controller, request, response, config) ;
+            await this.execAfterHandler(controller,context,controllerIocKeys, request, response, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
                 result = result && await adives[i]( result,controller,request,response,config);
@@ -268,7 +269,7 @@ module.exports = class {
             console.error(e);
         }
         controller.afterParas = null;
-        this.clearIoc(controller,request,response,config);
+        this.clearIoc(controller,context,controllerIocKeys,request,response,config);
         this.handlingCount3--;
     }
 
@@ -328,7 +329,7 @@ module.exports = class {
      * @param response
      * @param config
      */
-    execIoc(controller, request, response, config){
+    execIoc(controller,context,controllerIocKeys, request, response, config){
         controller.request = request;
         controller.response = response;
         let para1 = request.query || {}
@@ -338,7 +339,8 @@ module.exports = class {
         para3 = para3.MESSAGE_BODY || para3
 
         controller.paras = Object.assign({},para1,para2,para3)
-        controller.context = {}
+        controller.context = context;
+        controller.controllerIocKeys = controllerIocKeys;
         controller.url = config.url;
         controller.config = config;
         controller.app = this;
@@ -359,18 +361,19 @@ module.exports = class {
         return {sourceKey:arr[0],destKey:arr[1]||arr[0]};
     }
 
-    clearIoc(controller, request, response,config) {
+    clearIoc(controller,context,controllerIocKeys, request, response,config) {
         this.execIocFromPool(controller,true);
 
         controller.request = null;
         controller.response = null;
         controller.paras = null;
         controller.context = null;
+        controller.controllerIocKeys = null;
         controller.afterResponse = null;
         controller.afterParas = null;
         controller.i18nDefaultLocale = null;
 
-        var clearKeys = [...(config.controllerClearKeys||[]),...(controller.controllerClearKeys||[])];
+        var clearKeys = [...(config.controllerClearKeys||[]),...(controllerIocKeys||[])];
         clearKeys.forEach(key=>controller[key]=null);
     }
 
@@ -378,10 +381,10 @@ module.exports = class {
      * 过滤器
      * 可定制方法对应的过滤器，或者定义通用的过滤器
      */
-    async execFileter(controller, request, response, config) {
+    async execFilter(controller, context, controllerIocKeys, request, response, config) {
         var filters = config.filterHandlers || this.config.controllerFilterHandlers || [] ;
         for (var i = 0; i < filters.length; i++) {
-            if( !(await filters[i]( controller, request, response, config, this )))
+            if( !(await filters[i]( controller,context,controllerIocKeys, request, response, config, this )))
                 return false;
         }
         return true;
@@ -392,10 +395,10 @@ module.exports = class {
      * 请求结构发送后，进行某些处理，可定制/通用
      * 可用于用户行为的记录等
      */
-    async execAfterHandler(controller, request, response, config) {
+    async execAfterHandler(controller,context,controllerIocKeys, request, response, config) {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
-            await afterHandlers[i]( controller, request, response, config, this );
+            await afterHandlers[i]( controller,context,controllerIocKeys, request, response, config, this );
         }
     }
 
