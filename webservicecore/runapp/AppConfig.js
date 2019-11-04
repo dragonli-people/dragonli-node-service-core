@@ -67,6 +67,11 @@ module.exports = class {
         this._controllerIocKeys = [...this.controllerIocKeys,...keys];
     }
 
+    get controllerClearKeys(){return this._controllerClearKeys;}
+    addControllerClearKeys(keys){
+        this._controllerClearKeys = [...this._controllerClearKeys,...keys];
+    }
+
     get controllerAutoConfigKey(){return this._controllerAutoConfigKey;}
     addControllerAutoConfigKey(keys){
         this._controllerAutoConfigKey = [...this._controllerAutoConfigKey,...keys];
@@ -115,6 +120,7 @@ module.exports = class {
         this._appInitConfigHandlers = [];
         this._appInitHandlers = [];
         this._controllerIocKeys = [];
+        this._controllerClearKeys = [];
         this._controllerAutoConfigKey = [];
         this._controllerFilterHandlers = [];
         this._controllerAfterHandlers = [];

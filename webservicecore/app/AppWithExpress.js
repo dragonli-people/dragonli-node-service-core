@@ -350,9 +350,7 @@ module.exports = class {
         var icoKeys = [ ...this.config.controllerIocKeys,...(obj.icoKeys || [])].map(this.formatKey) ;
         var configKeys = [  ...this.config.controllerAutoConfigKey,...(obj.autoConfigKey||[])].map(this.formatKey);
         icoKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && DATA_POOL[sourceKey] || null );
-        icoKeys.forEach( ({sourceKey,destKey}) =>{
-            if(!obj.context) return;
-            obj.context[destKey] = !clear && DATA_POOL[sourceKey] || null });
+        icoKeys.forEach( ({sourceKey,destKey}) =>obj[destKey] = !clear && obj.context && obj.context[sourceKey] || null );
         configKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && CONFIG_POOL[sourceKey] || null );
     }
 
@@ -371,6 +369,9 @@ module.exports = class {
         controller.afterResponse = null;
         controller.afterParas = null;
         controller.i18nDefaultLocale = null;
+
+        var clearKeys = [...(config.controllerClearKeys||[]),...(controller.controllerClearKeys||[])];
+        clearKeys.forEach(key=>controller[key]=null);
     }
 
     /**
