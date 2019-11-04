@@ -384,7 +384,10 @@ module.exports = class {
     async execFilter(controller, context, controllerIocKeys, request, response, config) {
         var filters = config.filterHandlers || this.config.controllerFilterHandlers || [] ;
         for (var i = 0; i < filters.length; i++) {
-            if( !(await filters[i]( controller,context,controllerIocKeys, request, response, config, this )))
+            var current = filters[i];
+            var func = typeof current === 'function' ? current : current.doFilter;
+            if( !(await func.call( current === func ? null : current ,
+                     controller,context,controllerIocKeys, request, response, config, this )))
                 return false;
         }
         return true;
@@ -398,7 +401,10 @@ module.exports = class {
     async execAfterHandler(controller,context,controllerIocKeys, request, response, config) {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
-            await afterHandlers[i]( controller,context,controllerIocKeys, request, response, config, this );
+            var current = filters[i];
+            var func = typeof current === 'function' ? current : current.doFilter;
+            await func.call( current === func ? null : current ,
+                controller,context,controllerIocKeys, request, response, config, this );
         }
     }
 
