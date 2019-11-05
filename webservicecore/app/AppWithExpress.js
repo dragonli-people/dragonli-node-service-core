@@ -252,11 +252,12 @@ module.exports = class {
             await this.execAfterHandler(controller, request, response,context,controllerIocKeys, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
-                var func = adives[i];
-                func = typeof func === 'function' ? func : func.beforeBodyWrite;
+                var adive = adives[i];
+                var func = typeof adive === 'function' ? adive : adive.beforeBodyWrite;
                 if(!func || typeof func !== 'function')
                     throw new Error('advice must be function or advice.beforeBodyWrite must be function');
-                result = result && await func.call( this, result,controller,request,response,context,controllerIocKeys,config);
+                result = result && await func.call( adive === func ? null : adive
+                    , result,controller,request,response,context,controllerIocKeys,config,app);
             }
             await this.sendResult(config, url, controller, request, response, result);
         }catch (e) {
@@ -314,10 +315,10 @@ module.exports = class {
      */
     async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
         var advice = config.errorAdvice || controller.controllerErrorAdvice;
-        advice = typeof advice === 'function' ? advice : advice.exception;
-        if(!advice || typeof advice !== 'function')
+        var func = typeof advice === 'function' ? advice : advice.exception;
+        if(!func || typeof func !== 'function')
             throw new Error('advice must be function or advice.beforeBodyWrite must be function');
-        advice.call(this,e,controller, request, response,context,config);
+        func.call(advice === func ? null : advice,e,controller, request, response,context,config,app);
     }
 
     createController(url, request, response) {
