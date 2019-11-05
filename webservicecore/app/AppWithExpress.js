@@ -57,6 +57,7 @@ function onListening() {
     console.debug('App start!Listening on ' + bind);
 }
 
+// 循环任务相关，Express启动后执行
 async function taskTick() {
     this.status = 1
     try{
@@ -121,6 +122,7 @@ module.exports = class {
         this.config = config;
         this.taskConfig = config.tasksConfig;
 
+        // @TODO
         for( var func = null,i = 0 ; config.appInitConfigHandlers && i < config.appInitConfigHandlers.length ; i++ ){
             ( config.appInitConfigHandlers[i] && typeof config.appInitConfigHandlers[i] === 'function' && ( func = config.appInitConfigHandlers[i] ) )
             || ( config.appInitConfigHandlers[i].init
@@ -148,6 +150,7 @@ module.exports = class {
         this.server = http.createServer(app);
         this.routes = express.Router();
 
+        // @TODO
         for( var func = null,i = 0 ; config.appInitHandlers && i < config.appInitHandlers.length ; i++ ){
             ( config.appInitHandlers[i] && typeof config.appInitHandlers[i] === 'function' && ( func = config.appInitHandlers[i] ) )
             || ( config.appInitHandlers[i].init
@@ -155,6 +158,7 @@ module.exports = class {
             func && await func.call(config.appInitHandlers[i],this,DATA_POOL,CONFIG_POOL);
         }
 
+        // 请求路由初始化
         ( config.supportMethods || ['get','post','options'] ).map(
             v=>v.toLocaleLowerCase()).forEach(name => this.routes[name]
                 && typeof this.routes[name] === 'function' && this.routes[name]('/*',(...paras) => this.handle(...paras)));
@@ -169,6 +173,7 @@ module.exports = class {
         app.use(cookieParser());
         app.use('/', this.routes);
 
+        // @TODO
         config.appBeforeStartReady && await config.appBeforeStartReady(this,DATA_POOL,CONFIG_POOL);
 
         /**
@@ -257,6 +262,8 @@ module.exports = class {
         this.handlingCount1--;
 
         this.handlingCount3++;
+
+        // 后置处理
         try{
              !config.template && config.afterHandler && controller[config.afterHandler]
                 && typeof controller[config.afterHandler] === 'function'
@@ -275,6 +282,9 @@ module.exports = class {
     }
 
 
+    /**
+     *  请求处理完成，数据返回
+     */
     async sendResult(config, url, controller, request, response, data) {
         if(!data )
             return
@@ -295,6 +305,9 @@ module.exports = class {
         response.send(JSON.stringify(data))
     }
 
+    /**
+     * 请求异常处理
+     */
     async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
         var advice = config.errorAdvice || controller.controllerErrorAdvice;
         advice && typeof advice === 'function' && advice(e,controller, request, response);
@@ -409,6 +422,9 @@ module.exports = class {
         }
     }
 
+    /**
+     * 循环任务
+     */
     async taskTick()
     {
         while(true)
@@ -525,7 +541,4 @@ module.exports = class {
     //     }
     //     return result;
     // }
-
-
-
 }
