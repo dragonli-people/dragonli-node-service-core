@@ -310,7 +310,7 @@ module.exports = class {
      */
     async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
         var advice = config.errorAdvice || controller.controllerErrorAdvice;
-        advice && typeof advice === 'function' && advice(e,controller, request, response);
+        advice && typeof advice === 'function' && advice(e,controller, request, response,context,config);
     }
 
     createController(url, request, response) {
