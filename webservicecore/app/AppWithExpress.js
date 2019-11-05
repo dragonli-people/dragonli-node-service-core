@@ -249,7 +249,7 @@ module.exports = class {
         this.handlingCount2--;
 
         try {
-            await this.execAfterHandler(controller, request, response,context,controllerIocKeys, config) ;
+            await this.execAfterHandler(controller, context,controllerIocKeys,request, response, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
                 var adive = adives[i];
@@ -257,7 +257,7 @@ module.exports = class {
                 if(!func || typeof func !== 'function')
                     throw new Error('advice must be function or advice.beforeBodyWrite must be function');
                 result = result && await func.call( adive === func ? null : adive
-                    , result,controller,request,response,context,controllerIocKeys,config,app);
+                    , result,controller,request,response,context,controllerIocKeys,config,this);
             }
             await this.sendResult(config, url, controller, request, response, result);
         }catch (e) {
@@ -314,11 +314,14 @@ module.exports = class {
      * 请求异常处理
      */
     async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
-        var advice = config.errorAdvice || controller.controllerErrorAdvice;
+        var advice = config.errorAdvice || this.config.controllerErrorAdvice;
         var func = typeof advice === 'function' ? advice : advice.exception;
-        if(!func || typeof func !== 'function')
-            throw new Error('advice must be function or advice.beforeBodyWrite must be function');
-        func.call(advice === func ? null : advice,e,controller, request, response,context,config,app);
+        if(!func || typeof func !== 'function'){
+            console.error(e);
+            return e;
+        }
+            // throw new Error('advice must be function or advice.beforeBodyWrite must be function');
+        func.call(advice === func ? null : advice,e,controller, request, response,context,config,this);
     }
 
     createController(url, request, response) {
@@ -424,7 +427,7 @@ module.exports = class {
     async execAfterHandler(controller,context,controllerIocKeys, request, response, config) {
         var afterHandlers = config.afterHandlers || this.config.controllerAfterHandlers || [] ;
         for (var i = 0; i < afterHandlers.length; i++) {
-            var current = filters[i];
+            var current = afterHandlers[i];
             var func = typeof current === 'function' ? current : current.afterCompletion;
             await func.call( current === func ? null : current ,
                 controller,context,controllerIocKeys, request, response, config, this );
