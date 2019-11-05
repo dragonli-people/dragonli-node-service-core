@@ -252,7 +252,7 @@ module.exports = class {
             await this.execAfterHandler(controller, request, response,context,controllerIocKeys, config) ;
             var adives = config.resultAdvices || this.config.controllerResultAdvices || [];
             for( var  i = 0 ; i < adives.length ; i++ ) {
-                result = result && await adives[i]( result,controller,request,response,context,controllerIocKeys,config);
+                result = result && await adives[i].call( this, result,controller,request,response,context,controllerIocKeys,config);
             }
             await this.sendResult(config, url, controller, request, response, result);
         }catch (e) {
@@ -310,7 +310,7 @@ module.exports = class {
      */
     async handlerError(url,controller ,context,controllerIocKeys,request, response,config,e){
         var advice = config.errorAdvice || controller.controllerErrorAdvice;
-        advice && typeof advice === 'function' && advice(e,controller, request, response,context,config);
+        advice && typeof advice === 'function' && advice.call(this,e,controller, request, response,context,config);
     }
 
     createController(url, request, response) {
