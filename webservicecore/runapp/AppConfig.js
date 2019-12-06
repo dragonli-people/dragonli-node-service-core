@@ -130,9 +130,10 @@ module.exports = class {
     }
 
     removeHandlers(...paras){
-        var clearFunc = handler =>
+        var clearFunc = handler =>!(
             paras.filter(one=>typeof one === 'string').some(one=>one===handler.HANDLER_KEY)
-            || paras.filter(one=>typeof one === 'function').some(one=>one===handler || handler instanceof one);
+            || paras.filter(one=>typeof one === 'function').some(one=>one===handler || handler instanceof one)
+        );
 
         this._appInitConfigHandlers = this._appInitConfigHandlers.filter(clearFunc);
         this._appInitHandlers = this._appInitHandlers.filter(clearFunc);
