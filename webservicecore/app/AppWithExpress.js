@@ -247,6 +247,11 @@ module.exports = class {
             throw e;
         }
         this.handlingCount2--;
+        if(!result)
+        {
+            this.handlingCount1--;
+            return;
+        }
 
         try {
             await this.execAfterHandler(controller, context,controllerIocKeys,request, response, config) ;
