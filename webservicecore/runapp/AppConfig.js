@@ -20,7 +20,11 @@ module.exports = class {
     setViewFolder(_viewFolder) { this._viewFolder = _viewFolder; }
 
     get staticFolder(){return this._staticFolder;}
-    setStaticFolder(_staticFolder) { this._staticFolder = _staticFolder; }
+    get staticRootName(){return this._staticRootName;}
+    setStaticFolder(_staticFolder,_staticRootName) {
+        this._staticFolder = _staticFolder;
+        this._staticRootName = _staticRootName;
+    }
 
     get viewEngine(){return this._viewEngine;}
     setViewEngine(_viewEngine) { this._viewEngine = _viewEngine; }

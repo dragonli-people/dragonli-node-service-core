@@ -61,3 +61,4 @@ typings/
 .next
 .idea
 node_modules
+package-lock.json

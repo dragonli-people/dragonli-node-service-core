@@ -165,8 +165,11 @@ module.exports = class {
 
         // view engine setup
         config.viewFolder && app.set('views', path.join("./", config.viewFolder));
-        config.viewEngine && app.set('view engine', config.viewEngine)
-        config.staticFolder && app.use(express.static(path.join(__dirname, config.staticFolder)));
+        config.viewEngine && app.set('view engine', config.viewEngine);
+        // staticFolder,staticRootName
+        //example:
+        // app.use('/static', express.static('public'));
+        this.staticFolder && app.use(this.staticRootName || '/', express.static(this.staticFolder));
         app.use( (req,res,next) => {req && delete req.headers['content-encoding']; next();})
         app.use(bodyParser.json({limit: config.requestLimit}));
         app.use(bodyParser.urlencoded({ extended: false, limit:config.requestLimit}));
