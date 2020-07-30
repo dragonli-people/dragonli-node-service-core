@@ -18,4 +18,5 @@ const routerConf = [
 const config = new AppConfig();
 config.addRoutesConfig(routerConf);
 config.setPort(process.env.PORT||3001);
+config.setStaticFolder('public','/static');
 (new AppWithExpress()).start(config);

@@ -169,7 +169,7 @@ module.exports = class {
         // staticFolder,staticRootName
         //example:
         // app.use('/static', express.static('public'));
-        this.staticFolder && app.use(this.staticRootName || '/', express.static(this.staticFolder));
+        config.staticFolder && app.use(config.staticRootName || '/', express.static(config.staticFolder));
         app.use( (req,res,next) => {req && delete req.headers['content-encoding']; next();})
         app.use(bodyParser.json({limit: config.requestLimit}));
         app.use(bodyParser.urlencoded({ extended: false, limit:config.requestLimit}));
