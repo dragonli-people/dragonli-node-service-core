@@ -25,6 +25,9 @@ module.exports = class {
         this._staticFolder = _staticFolder;
         this._staticRootName = _staticRootName;
     }
+    setStaticRootName(_staticRootName){
+        this._staticRootName = _staticRootName;
+    }
 
     get viewEngine(){return this._viewEngine;}
     setViewEngine(_viewEngine) { this._viewEngine = _viewEngine; }
