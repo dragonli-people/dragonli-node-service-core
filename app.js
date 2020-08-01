@@ -7,7 +7,7 @@ class Controller1 {
     }
 
     async hello(){
-        return {msg:'hello world'};
+        return {msg:'hello world',paras:this.paras};
     }
 }
 const routerConf = [
