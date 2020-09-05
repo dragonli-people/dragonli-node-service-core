@@ -150,7 +150,6 @@ module.exports = class {
         this.server = http.createServer(app);
         this.routes = express.Router();
 
-        // @TODO
         for( var func = null,i = 0 ; config.appInitHandlers && i < config.appInitHandlers.length ; i++ ){
             ( config.appInitHandlers[i] && typeof config.appInitHandlers[i] === 'function' && ( func = config.appInitHandlers[i] ) )
             || ( config.appInitHandlers[i].init
@@ -176,8 +175,9 @@ module.exports = class {
         app.use(cookieParser());
         app.use('/', this.routes);
 
-        // @TODO
         config.appBeforeStartReady && await config.appBeforeStartReady(this,DATA_POOL,CONFIG_POOL);
+
+        //todo 支持路径参数
 
         /**
          * Listen on provided port, on all network interfaces.
@@ -185,7 +185,7 @@ module.exports = class {
         app.set('port', config.port);
         this.server.on('error', onError);
         this.server.on('listening', onListening);
-        this.server.setTimeout(config.timeout);//todo 改为配置
+        this.server.setTimeout(config.timeout);
         this.server.listen(config.port);
 
         // 循环任务相关
