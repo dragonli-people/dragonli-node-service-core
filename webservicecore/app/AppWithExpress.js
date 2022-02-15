@@ -188,6 +188,12 @@ module.exports = class {
         this.server.setTimeout(config.timeout);
         this.server.listen(config.port);
 
+        Object.entries(this.config.services).map(([key,clz])=>{
+            const handler = new clz();
+            this.putToPool(key,handler)
+            return handler
+        }).forEach(handler=>this.execIocFromPool(handler))
+
         // 循环任务相关
         this.taskStopFlag = false;
         this.taskTick();
@@ -387,7 +393,7 @@ module.exports = class {
         icoKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && DATA_POOL[sourceKey] || null );
         !clear && icoKeys.filter(({destKey}) =>!obj[destKey])
             .forEach( ({sourceKey,destKey}) =>obj[destKey] = obj.context && obj.context[sourceKey] || null );
-        configKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = !clear && CONFIG_POOL[sourceKey] || null );
+        configKeys.forEach( ({sourceKey,destKey}) => obj[destKey] = obj !== CONFIG_POOL[sourceKey] && !clear && CONFIG_POOL[sourceKey] || null );
     }
 
     formatKey(key){

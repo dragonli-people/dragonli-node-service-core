@@ -59,6 +59,12 @@ module.exports = class {
         Object.assign(this._tasksConfig,tasks);
     }
 
+    get services(){return this._services || {};}
+    addServices(_services){
+        this._services = Object.assign(this._services || {},_services);
+        this.addControllerIocKeys(Object.keys(_services))
+    }
+
     get appInitConfigHandlers(){return this._appInitConfigHandlers;}
     addAppInitConfigHandlers(configHandlers){
         this._appInitConfigHandlers = [...this._appInitConfigHandlers,...configHandlers];
