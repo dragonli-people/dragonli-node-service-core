@@ -9,7 +9,7 @@ module.exports = function (conditions,errCodes,messages) {
         if( !conditions[i] ) {
             if(!errCode)
                 throw new Error('Assert Check Failed With not errorCode');
-            throw new ExceptoinWithErrorCode(errCode,`Assert Check Failed:[${message}]`);
+            throw new ExceptoinWithErrorCode(errCode,message);
         }
     }
 }
