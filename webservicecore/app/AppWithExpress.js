@@ -199,7 +199,8 @@ module.exports = class {
         this.taskTick();
 
         await Sleep(32);
-        console.log('==========app started done!==========')
+        console.log('==========app started done!==========');
+        config.appAfterStartReady && await config.appAfterStartReady(this,DATA_POOL,CONFIG_POOL);
     }
 
     /**
@@ -487,7 +488,7 @@ module.exports = class {
                 if(task.status === 0 || task.status === 4)
                 {
                     task.taskTick()
-                    return
+
                 }
 
                 //todo 执行到此处是有问题的...，有待日志记录
